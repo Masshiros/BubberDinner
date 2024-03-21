@@ -20,14 +20,14 @@ namespace BubberDinner.API.Controllers
         {
             var authResult =
                 _authService.Register(request.FirstName, request.LastName, request.Email, request.Password);
-            var response = new AuthenticationResponse(authResult.Id, authResult.FirstName, authResult.LastName,authResult.Email, authResult.Token);
+            var response = new AuthenticationResponse(authResult.User.Id, authResult.User.FirstName, authResult.User.LastName,authResult.User.Email, authResult.Token);
             return Ok(response);
         }
         [HttpGet("login")]
         public IActionResult Login(LoginRequest request)
         {
             var authResult = _authService.Login(request.Email, request.Password);
-            var response = new AuthenticationResponse(authResult.Id, authResult.FirstName, authResult.LastName, authResult.Email, authResult.Token);
+            var response = new AuthenticationResponse(authResult.User.Id, authResult.User.FirstName, authResult.User.LastName, authResult.User.Email, authResult.Token);
             return Ok(response);
         }
     }

@@ -1,28 +1,53 @@
 ﻿using BubberDinner.Application.Common.Interfaces.Auth;
+using BubberDinner.Application.Common.Persistent;
+using BubberDinner.Domain.Entities;
 
 namespace BubberDinner.Application.Services.Auth
 {
     public class AuthService : IAuthService
     {
         private readonly IJwtGenerator _jwtGenerator;
+        private readonly IUserRepository _userRepository;
 
-        public AuthService(IJwtGenerator jwtGenerator)
+        public AuthService(IJwtGenerator jwtGenerator, IUserRepository userRepository)
         {
             _jwtGenerator = jwtGenerator;
+            _userRepository = userRepository;
         }
         public AuthenticationResult Login(string email, string password)
         {
-          
+            if (_userRepository.GetUserByEmail(email) is not User user)
+            {
+                throw new Exception("User with given email already exists");
+            }
 
-            return new AuthenticationResult(Guid.NewGuid(), "firstName", "lastName", email, "token");
+            if (user.Password != password)
+            {
+                throw new Exception("Invalid Password");
+            }
+            var token = _jwtGenerator.GenerateJwtToken(user);
+            return new AuthenticationResult(user,token);
         }
 
         public AuthenticationResult Register(string firstName, string lastName, string email, string password)
         {
+            if (_userRepository.GetUserByEmail(email) is not null)
+            {
+                throw new Exception("User with given email already exists");
+            }
+
+            var user = new User
+            {
+                FirstName = firstName,
+                Email = email,
+                LastName = lastName,
+                Password = password,
+            };
+            _userRepository.Add(user);
             Guid userId = Guid.NewGuid();
 
-            var token = _jwtGenerator.GenerateJwtToken(userId, email, password);
-            return new AuthenticationResult(Guid.NewGuid(), firstName, lastName, email, token);
+            var token = _jwtGenerator.GenerateJwtToken(user);
+            return new AuthenticationResult(user, token);
         }
     }
 }

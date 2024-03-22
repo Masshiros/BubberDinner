@@ -17,16 +17,16 @@ namespace BubberDinner.Application.Services.Auth
             _jwtGenerator = jwtGenerator;
             _userRepository = userRepository;
         }
-        public AuthenticationResult Login(string email, string password)
+        public ErrorOr<AuthenticationResult> Login(string email, string password)
         {
             if (_userRepository.GetUserByEmail(email) is not User user)
             {
-                throw new Exception("User with given email already exists");
+                return Errors.Auth.InvalidCredential;
             }
 
             if (user.Password != password)
             {
-                throw new Exception("Invalid Password");
+                return Errors.Auth.InvalidCredential;
             }
             var token = _jwtGenerator.GenerateJwtToken(user);
             return new AuthenticationResult(user,token);

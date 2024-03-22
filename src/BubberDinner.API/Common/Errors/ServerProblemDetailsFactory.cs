@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using BubberDinner.API.Common.Http;
 using ErrorOr;
 
 namespace BubberDinner.API.Common.Errors;

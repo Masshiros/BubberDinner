@@ -1,5 +1,6 @@
 ﻿using BubberDinner.Application.Services.Auth;
 using BubberDinner.Contracts.Authentication;
+using BubberDinner.Domain.Common.Errors;
 using ErrorOr;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,7 @@ namespace BubberDinner.API.Controllers
         {
             ErrorOr<AuthenticationResult> authResult =
                 _authService.Register(request.FirstName, request.LastName, request.Email, request.Password);
+          
             return authResult.Match(authResult => Ok(AuthReturnMapper(authResult)),
                 errors => Problem(errors));
         }
@@ -33,6 +35,11 @@ namespace BubberDinner.API.Controllers
         public IActionResult Login(LoginRequest request)
         {
             ErrorOr<AuthenticationResult>  authResult = _authService.Login(request.Email, request.Password);
+            if (authResult.IsError && authResult.FirstError == Errors.Auth.InvalidCredential)
+            {
+                return Problem(statusCode: StatusCodes.Status401Unauthorized,
+                    detail: authResult.FirstError.Description);
+            }
             return authResult.Match(authResult => Ok(AuthReturnMapper(authResult)),
                 errors => Problem(errors));
         }

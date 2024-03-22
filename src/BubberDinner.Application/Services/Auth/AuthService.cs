@@ -1,6 +1,9 @@
-﻿using BubberDinner.Application.Common.Interfaces.Auth;
+﻿using System.ComponentModel;
+using BubberDinner.Application.Common.Interfaces.Auth;
 using BubberDinner.Application.Common.Persistent;
+using BubberDinner.Domain.Common.Errors;
 using BubberDinner.Domain.Entities;
+using ErrorOr;
 
 namespace BubberDinner.Application.Services.Auth
 {
@@ -29,11 +32,11 @@ namespace BubberDinner.Application.Services.Auth
             return new AuthenticationResult(user,token);
         }
 
-        public AuthenticationResult Register(string firstName, string lastName, string email, string password)
+        public ErrorOr<AuthenticationResult> Register(string firstName, string lastName, string email, string password)
         {
             if (_userRepository.GetUserByEmail(email) is not null)
             {
-                throw new Exception("User with given email already exists");
+                return Errors.User.DuplicateEmail;
             }
 
             var user = new User

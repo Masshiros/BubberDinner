@@ -1,13 +1,13 @@
 ﻿using BubberDinner.Application.Services.Auth;
 using BubberDinner.Contracts.Authentication;
+using ErrorOr;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BubberDinner.API.Controllers
 {
     [Route("api/auth")]
-    [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : APIController
     {
         private readonly IAuthService _authService;
 
@@ -18,17 +18,23 @@ namespace BubberDinner.API.Controllers
         [HttpPost("register")]
         public IActionResult Register(RegisterRequest request)
         {
-            var authResult =
+            ErrorOr<AuthenticationResult> authResult =
                 _authService.Register(request.FirstName, request.LastName, request.Email, request.Password);
-            var response = new AuthenticationResponse(authResult.User.Id, authResult.User.FirstName, authResult.User.LastName,authResult.User.Email, authResult.Token);
-            return Ok(response);
+            return authResult.Match(authResult => Ok(AuthReturnMapper(authResult)),
+                errors => Problem(errors));
+        }
+
+        private static AuthenticationResponse AuthReturnMapper(AuthenticationResult result)
+        {
+            return new AuthenticationResponse(
+                result.User.Id, result.User.FirstName, result.User.LastName, result.User.Email, result.Token);
         }
         [HttpGet("login")]
         public IActionResult Login(LoginRequest request)
         {
-            var authResult = _authService.Login(request.Email, request.Password);
-            var response = new AuthenticationResponse(authResult.User.Id, authResult.User.FirstName, authResult.User.LastName, authResult.User.Email, authResult.Token);
-            return Ok(response);
+            ErrorOr<AuthenticationResult>  authResult = _authService.Login(request.Email, request.Password);
+            return authResult.Match(authResult => Ok(AuthReturnMapper(authResult)),
+                errors => Problem(errors));
         }
     }
 }

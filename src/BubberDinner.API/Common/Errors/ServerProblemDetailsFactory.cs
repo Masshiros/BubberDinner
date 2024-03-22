@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using ErrorOr;
 
-namespace BubberDinner.API.Errors;
+namespace BubberDinner.API.Common.Errors;
 
 public sealed class ServerProblemDetailsFactory : ProblemDetailsFactory
 {
@@ -87,15 +88,15 @@ public sealed class ServerProblemDetailsFactory : ProblemDetailsFactory
         {
             problemDetails.Extensions["traceId"] = traceId;
         }
-        problemDetails.Extensions.Add("test-custom-details","test");
+        problemDetails.Extensions.Add("test-custom-details", "test");
 
-        //// Custom Problem details here
-        //var errors = httpContext?.Items[HttpContextItemKeys.Errors] as List<Error>;
+        // Custom Problem details here
+        var errors = httpContext?.Items[HttpContextItemKeys.Errors] as List<Error>;
 
-        //if (errors is not null)
-        //{
-        //    problemDetails.Extensions.Add("errorCodes", errors.Select(e => e.Code));
-        //}
+        if (errors is not null)
+        {
+            problemDetails.Extensions.Add("errorCodes", errors.Select(e => e.Code));
+        }
     }
 
 }
